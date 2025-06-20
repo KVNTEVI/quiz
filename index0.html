@@ -2,63 +2,35 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./style0.css">
-    <title>INGGBAATEST-Pro</title>
+    <title>Formulaire INGGBATEST-Pro</title>
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <header>
-        <div>
-            <h1>INGGBAATEST-Pro</h1>
-            <p>Questionnaire réservé aux participants âgés de 15-25 ans</p>
+    <div class="main_content">
+
+        <div id="header_screen" class="header_screen">
+            
+            <h1 class="title">INGGBAATEST-Pro</h1>
+            <P>Bienvenue dans le quiz INGGBAATEST-PRO</P>
+            <span class="sous_title"> Il y a <span class="nbrQuestion"> ?? </span> Questions </span>
+            <div>
+                <button id="btn_start" class="start"> Commencer </button>
+            </div>
         </div>
-    </header>
 
-    <section class="form">
-        <h3>Information personnelle</h3>
-        <form id="registrationForm">
-            <label for="nom">Nom</label>
-            <input type="text" id="nom" name="nom" required>
-
-            <label for="prénom">Prénom</label>
-            <input type="text" id="prénom" name="prénom" required>
-
-            <label for="age">Age</label>
-            <input type="number" id="age" name="age" required >
-
-            <label for="email">Adresse Email</label>
-            <input type="email" id="email" name="email" required>
-
-            <button type="submit">Envoyer la Demande</button>
-        </form>
-    </section>
-
-    <footer>
-        <p>&copy; INGGBAATEST-Pro</p>
-    </footer>
-
-    <script>
-        // 
-        document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        <div id="questions_screen" class="questions_screen">
             
-            const age = parseInt(document.getElementById('age').value);
-            
-            if (age >= 15 && age <= 25) {
-                const userData = {
-                    nom: document.getElementById('nom').value,
-                    prenom: document.getElementById('prénom').value,
-                    email: document.getElementById('email').value,
-                    age: age
-                };
-                
-                localStorage.setItem('quizUser', JSON.stringify(userData));
-                window.location.href = 'index.html';
-            } else {
-                alert("Désolé, ce quiz est réservé aux participants âgés de 15 à 25 ans");
-                document.getElementById('age').focus();
-            }
-        });
-    </script>
+        </div>
+
+        <div id="result_screen" class="result_screen">
+            <h2 class=""> Résultat </h2>
+            <span class=""> Vous avez trouver <span id="nbrCorrects"> ?? </span> bonne réponses sur <span class="nbrQuestion"> ?? </span> </span>
+        </div>
+        
+    </div>
+
+    <script src="./script.js"></script>
 </body>
 </html>
