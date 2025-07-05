@@ -197,3 +197,37 @@ function startQuestions() {
 let btn_start = document.getElementById("btn_start");
 btn_start.addEventListener("click", startQuestions);
 
+let timerInterval;
+function startTimer(durationMinutes = 20) {
+    let timerDisplay = document.getElementById("timer_display");
+    if (!timerDisplay) {
+        timerDisplay = document.createElement("div");
+        timerDisplay.id = "timer_display";
+        timerDisplay.style.fontSize = "1.5em";
+        timerDisplay.style.margin = "10px";
+        header_screen.parentNode.insertBefore(timerDisplay, header_screen.nextSibling);
+    }
+    let time = durationMinutes * 60;
+    function updateTimer() {
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+        timerDisplay.textContent = `⏰Temps restant : ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (time <= 0) {
+            clearInterval(timerInterval);
+            questions_screen.style.display = "none";
+            result_screen.style.display = "block";
+            let NbrCorrectUser = document.querySelector("#nbrCorrects");
+            NbrCorrectUser.textContent = quiz.nbrCorrects;
+            timerDisplay.textContent = "Temps écoulé !";
+        }
+        time--;
+    }
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+// Démarre le timer quand le quiz commence
+btn_start.addEventListener("click", function() {
+    startTimer(20);
+});
+
