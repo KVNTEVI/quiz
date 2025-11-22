@@ -68,7 +68,23 @@ header h1 {
     background-color:#1144b1;
 }
 
+.btn-restart {
+    background-color: #04266e;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    text-decoration: none;
+}
 
+.btn-restart:hover {
+    background-color:#1144b1;
+}
 
 .header_screen {
     background: linear-gradient(135deg, #2b5876, #4e4376);
@@ -80,6 +96,9 @@ header h1 {
     border-radius: 12px;
 }
 
+span {
+    font-size: 20px;
+}
 .questions_screen {
     display: none;
 }

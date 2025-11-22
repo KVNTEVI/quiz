@@ -22,11 +22,21 @@ function Quiz(){
             );
         }
         else {
+            // Fin du quiz
             questions_screen.style.display = "none";
+            
+            // Arrêter le minuteur
+            clearInterval(timerInterval);
 
             let NbrCorrectUser = document.querySelector("#nbrCorrects");
             NbrCorrectUser.textContent = quiz.nbrCorrects;
             result_screen.style.display = "block";
+            
+            // Cacher l'affichage du minuteur sur l'écran de résultat
+            let timerDisplay = document.getElementById("timer_display");
+            if (timerDisplay) {
+                timerDisplay.style.display = "none";
+            }
         }
     }
 }
@@ -52,12 +62,15 @@ function Question(title, answers, correctAnswers) {
 
         // Boucle en ForEach pour placer à chaque fois un <li> pour chaque réponse
         this.answers.forEach((answer, index) => {
-            let answerElement =  document.createElement("li");
+            let answerElement =  document.createElement("li");
             answerElement.classList.add("answers");
             answerElement.textContent = answer;
             answerElement.id = index + 1;
-            answerElement.addEventListener("click", this.checkAnswer)
-    
+            
+            // Correction : L'écouteur doit être lié à une fonction qui référence la bonne question (closure)
+            // On encapsule l'appel à this.checkAnswer pour que 'this' pointe correctement vers la Question
+            answerElement.addEventListener("click", this.checkAnswer.bind(this));
+            
             questionAnswer.append(answerElement);
         });
 
@@ -76,37 +89,43 @@ function Question(title, answers, correctAnswers) {
     },
 
     // Ici on va checker la réponse correcte avec une écoute d'évènement :
-    this.checkAnswer = (e) => { 
+    this.checkAnswer = function(e) { 
         let answerSelect = e.target;
+        
+        // Désactiver tous les écouteurs pour éviter les doubles clics ou triches
+        questions_screen.querySelectorAll(".answers").forEach(li => {
+            li.style.pointerEvents = 'none';
+        });
+        
         if (this.isCorrectAnswer(answerSelect.id)) {
             answerSelect.classList.add("answersCorrect");
-            quiz.nbrCorrects++;
+            // NOTE : Le compteur nbrCorrects n'est incrémenté qu'une fois par question, 
+            // même si plusieurs réponses correctes sont attendues.
+            quiz.nbrCorrects++; 
         } else {
             answerSelect.classList.add("answersWrong");
-            let RightAnswers = this.correctAnswers.map(index => document.getElementById(index));
-            RightAnswers.forEach(RightAnswer => {
-                RightAnswer.classList.add("answersCorrect");
+            // Révéler la ou les bonnes réponses
+            this.correctAnswers.forEach(index => {
+                let RightAnswer = document.getElementById(index);
+                if (RightAnswer) {
+                    RightAnswer.classList.add("answersCorrect");
+                }
             });
         }
 
-        // Vérifiez si toutes les bonnes réponses ont été sélectionnées
-        const allCorrectAnswersSelected = this.correctAnswers.every(index => {
-            return document.getElementById(index).classList.contains("answersCorrect");
-        });
-
-        // Si toutes les bonnes réponses ont été sélectionnées, passez à la question suivante
-        if (allCorrectAnswersSelected) {
-            setTimeout(function() {
-                questions_screen.textContent = '';
-                quiz.indexCurrentQuestion++;
-                quiz.displayCurrentQuestion();
-            }, 1100);
-        }
+        // Passage à la question suivante après un court délai
+        setTimeout(() => {
+            questions_screen.textContent = '';
+            quiz.indexCurrentQuestion++;
+            quiz.displayCurrentQuestion();
+        }, 1100);
     }
 
     // Si la réponse choisit par le user est égale à la réponse correcte retourner True sinon False
     this.isCorrectAnswer = function(answerUser) {
-        return this.correctAnswers.includes(parseInt(answerUser)); // Vérifie si la réponse est dans les réponses correctes
+        // Le Array.isArray vérifie si c'est un tableau de réponses multiples, mais ici on gère des réponses uniques
+        // En se basant sur la structure de vos questions, qui ont une seule réponse correcte dans le tableau `[2]`
+        return this.correctAnswers.includes(parseInt(answerUser)); 
     }
 };
 
@@ -201,19 +220,34 @@ let timerInterval;
 function startTimer(durationMinutes = 20) {
     let timerDisplay = document.getElementById("timer_display");
     if (!timerDisplay) {
+        // Crée l'élément du minuteur s'il n'existe pas
         timerDisplay = document.createElement("div");
         timerDisplay.id = "timer_display";
         timerDisplay.style.fontSize = "1.5em";
         timerDisplay.style.margin = "10px";
+        timerDisplay.style.textAlign = "center"; // Centrer pour la clarté
         header_screen.parentNode.insertBefore(timerDisplay, header_screen.nextSibling);
     }
+    
+    // Assurer que le minuteur est visible quand il démarre
+    timerDisplay.style.display = "block";
+    
     let time = durationMinutes * 60;
+    
+    // Si le minuteur tournait déjà, l'arrêter
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
     function updateTimer() {
         let minutes = Math.floor(time / 60);
         let seconds = time % 60;
         timerDisplay.textContent = `⏰Temps restant : ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
         if (time <= 0) {
             clearInterval(timerInterval);
+            
+            // Affichage du résultat en cas de temps écoulé
             questions_screen.style.display = "none";
             result_screen.style.display = "block";
             let NbrCorrectUser = document.querySelector("#nbrCorrects");
@@ -231,3 +265,38 @@ btn_start.addEventListener("click", function() {
     startTimer(20);
 });
 
+
+// ====================================================================
+// NOUVELLE FONCTIONNALITÉ : REDÉMARRER LE QUIZ
+// ====================================================================
+
+// 1. Récupérer le bouton "Réessayer" (Assurez-vous qu'il a l'ID "btn_restart" dans votre HTML)
+let btn_restart = document.getElementById("btn_restart");
+
+/**
+ * Fonction servant à redémarrer le quiz en réinitialisant l'état et en retournant à l'écran d'accueil.
+ */
+function restartQuiz() {
+    // 1. Réinitialiser l'état du quiz
+    quiz.nbrCorrects = 0;
+    quiz.indexCurrentQuestion = 0;
+
+    // 2. Arrêter et cacher le minuteur
+    clearInterval(timerInterval);
+    let timerDisplay = document.getElementById("timer_display");
+    if (timerDisplay) {
+        timerDisplay.style.display = "none";
+    }
+
+    // 3. Vider tout le contenu généré précédemment de l'écran des questions
+    questions_screen.textContent = '';
+
+    // 4. Masquer l'écran de résultat et afficher l'écran d'introduction (header)
+    result_screen.style.display = "none";
+    header_screen.style.display = "block";
+}
+
+// 2. Ajouter l'écouteur d'événement au bouton de redémarrage
+if (btn_restart) {
+    btn_restart.addEventListener("click", restartQuiz);
+}
